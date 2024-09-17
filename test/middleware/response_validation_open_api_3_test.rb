@@ -186,6 +186,20 @@ describe Committee::Middleware::ResponseValidation do
       assert_match(/but received String: \"1\"/i, e.message)
     end
 
+    it "detects extra parameters" do
+      @app = new_response_rack({ param_not_in_spec: :honoka }.to_json,
+                               {},
+                               app_status: 200,
+                               schema: open_api_3_schema,
+                               raise: true)
+
+     e = assert_raises(Committee::InvalidResponse) do
+       get "/characters"
+     end
+
+      assert_match(/bla/i, e.message)
+    end
+
     it "detects an invalid response status code with validate_success_only=true" do
       @app = new_response_rack({ string_1: :honoka }.to_json,
                                {},
@@ -225,7 +239,7 @@ describe Committee::Middleware::ResponseValidation do
     @app = Rack::Builder.new {
       use Committee::Middleware::ResponseValidation, {schema: open_api_3_schema, raise: true}
       run lambda { |_|
-        JSON.load('-') # invalid json  
+        JSON.load('-') # invalid json
       }
     }
 
@@ -234,7 +248,7 @@ describe Committee::Middleware::ResponseValidation do
     end
   end
 
-  it "strict and invalid status" do    
+  it "strict and invalid status" do
     @app = new_response_rack(JSON.generate(CHARACTERS_RESPONSE), {}, {schema: open_api_3_schema, strict: true}, {status: 201})
     get "/characters"
     assert_equal 500, last_response.status
@@ -249,8 +263,8 @@ describe Committee::Middleware::ResponseValidation do
   end
 
   it "strict and invalid content type" do
-    @app = new_response_rack("abc", 
-      {}, 
+    @app = new_response_rack("abc",
+      {},
       {schema: open_api_3_schema, strict: true},
       {content_type: 'application/text'}
     )
