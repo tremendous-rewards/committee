@@ -191,6 +191,7 @@ describe Committee::Middleware::ResponseValidation do
                                {},
                                app_status: 200,
                                schema: open_api_3_schema,
+                               strict: true,
                                raise: true)
 
      e = assert_raises(Committee::InvalidResponse) do
